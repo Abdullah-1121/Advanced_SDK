@@ -143,31 +143,101 @@ def check_the_input_history(data : HandoffInputData)-> HandoffInputData:
           
     return data
 
-agent = Agent(
-    name = 'Basic Agent',
-    instructions=basic_agent_instructions,
-    model=model,
-    tools=[get_user_id],
-    handoffs=[handoff(
-        agent=order_agent,
-        tool_name_override='get_order_status_by_Order_agent',
-        input_filter=check_the_input_history
-    )]
+# agent = Agent(
+#     name = 'Basic Agent',
+#     instructions=basic_agent_instructions,
+#     model=model,
+#     tools=[get_user_id],
+#     handoffs=[handoff(
+#         agent=order_agent,
+#         tool_name_override='get_order_status_by_Order_agent',
+#         input_filter=check_the_input_history
+#     )]
 
+# )
+class Summary(BaseModel):
+    summary : str
+summarizer_agent = Agent(
+    name = 'Summarizer Agent',
+    instructions = 'You are a summarizer agent , you summarize the conversation and return the summary of the conversation to the user',
+    model = model 
+)
+def summarize_conversation(data : HandoffInputData)-> HandoffInputData:
+    print('Data passed to the suuport agent')
+    # input_query = f'Summarize this conversation : {data.input_history}'
+    # result = await Runner.run(
+    #     starting_agent=summarizer_agent,
+    #     input = input_query,
+    #     run_config=config)
+    # summary = result.final_output.summary
+    # print('\n\n INPUT HISTORY \n\n')
+    # print(data.input_history)
+    # print('\n\n PRE HANDOFF ITEMS \n\n')
+    # print(data.pre_handoff_items)
+    # print('\n\n NEW ITEMS \n\n')
+    # print(data.new_items)
+    return data
+    # return HandoffInputData(
+    #     input_history=summary,
+    #     pre_handoff_items=data.pre_handoff_items
+
+    # )
+support_agent = Agent(
+    name = 'Support Agent',
+    instructions='''You help users with their problems related to customer support and provide the guidance and the solution''',
+    model=model,
+    handoff_description='Help the users with the customer support queries'
 )
 
+technical_agent = Agent(
+    name = 'Technical Agent',
+    instructions='''You help users with the technical queries and issues''',
+    model=model,
+    handoff_description='''Assist users with the technical queries and issues'''
+    
+)
+
+agent = Agent(
+    name = 'Basic Agent',
+    instructions=f'''You are a basic agent , you have a tool to get the weather of any city , when the user demands you can call the tool and get the weather of the required city , you also have a specialiazed agents in your workflow one is responsible for handling customer support quries , user issues and billing queries etc, while the other is responsible for handling the technical issues queries
+    # Objectives :
+    - Analyze the query 
+    - if the user is demanding or asking about the weather of the any city use the tool to get the weather of the city
+    - if the user's query is related to some customer support queries , then you should handoff to the support agent
+    - if the  user's query is related to some technical queries , then you should handoff to the technical agent
+    ''',
+    tools=[get_weather],
+    handoffs=[handoff(
+        agent=support_agent,
+        input_filter=summarize_conversation
+        ) , handoff(
+            agent=technical_agent
+        )],
+    model = model
+    )
 # Case 1 : IF the agent has a handoff available but we try the first agent to perform its task and then handoff to a specific agent 
 # Yeah , it worked , we can first call the triage agent to do the action then it will handoff to the other agent if needed
 
+# Case 2 : If both the tool and handoff are called simultaneously then what will happen ?
+
+# Ans :  For this query : "Hi ! what is the weather in new york and i have ordered the product , but still can received yet ? help me with that ?"  ,firstly the tool is called and then handoff happened as expected and we get the response
+# For this query : 'Hi ! I have ordered the product , but still can received yet ? firstly help me with that ? and then aftwerwards also tell me the weather in new york' , the handoff is done firstly and then as we know we have moved to the other agent , and the other agent dont have the access to the tool so  then there will be no tool call
+
+# Case 3: When multiple handoffs are called , then what will happen ?
+
+# Ans : The llm will initiate both the handoffs but the first one will be proceeded and the other will be ignored
+
+# creating a custom handoff input filter in which we summarize all the conversation history and pass it to the next agent
 
 
 
 async def run_agent():
     result = await Runner.run(
         starting_agent=agent,
-        input='what is the status of the product that i have delivered , my order id is 8457498?',
+        input='Hi !I ordered the product but got the wrong on delivery help me with that , and also there is a bug in the website can you make it fixed ?',
         run_config=config
     )
     print(result.final_output)
+    print(result.last_agent.name)
 
 asyncio.run(run_agent())
