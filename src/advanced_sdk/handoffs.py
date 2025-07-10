@@ -159,7 +159,8 @@ agent = Agent(
 # Case 1 : IF the agent has a handoff available but we try the first agent to perform its task and then handoff to a specific agent 
 # Yeah , it worked , we can first call the triage agent to do the action then it will handoff to the other agent if needed
 
-# Case 2: LLM ORCHESTRATION PATTERN : ----------PROCESS AND THEN DELEGATE--------------
+
+
 
 async def run_agent():
     result = await Runner.run(
