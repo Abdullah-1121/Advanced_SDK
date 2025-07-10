@@ -1,0 +1,26 @@
+[project]
+name = "advanced-sdk"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Abdullah-1121", email = "muhammad11abdullah21@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "agentops>=0.4.17",
+    "keywordsai-tracing[openai-agents]>=0.0.3",
+    "langsmith>=0.3.14",
+    "logfire>=3.23.0",
+    "mlflow>=3.1.1",
+    "openai-agents>=0.1.0",
+    "python-dotenv>=1.1.1",
+    "weave>=0.51.54",
+]
+
+[project.scripts]
+advanced-sdk = "advanced_sdk:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
