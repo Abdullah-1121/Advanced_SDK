@@ -28,9 +28,10 @@ import logfire
 # Load environment variables from .env file
 load_dotenv()
 gemini_api_key = os.getenv("GEMINI_API_KEY")
-weave.init("Advanced_SDK")
+openai_api_key=os.getenv("OPENAI_API_KEY")
+# weave.init("Advanced_SDK")
 # Set up tracing with Weave
-set_trace_processors([WeaveTracingProcessor()])
+# set_trace_processors([WeaveTracingProcessor()])
 # agent_ops_api_key = os.getenv("AGENTOPS_API_KEY")
 # langmsith_api_key = os.getenv("LANGSMITH_API_KEY")
 # set_trace_processors([OpenAIAgentsTracingProcessor()])
